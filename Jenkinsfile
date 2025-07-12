@@ -23,7 +23,11 @@ pipeline {
             steps {
                 echo "Building Docker image using docker-compose..."
                 echo "Image will be named: ${IMAGE_NAME}:${IMAGE_TAG}"
-                sh 'docker-compose -f docker.compose.yaml build'
+                if (isUnix()) {
+                    sh 'docker-compose -f docker.compose.yaml build'
+                } else {
+                    bat 'docker-compose -f docker.compose.yaml build'
+                }
                 echo "Image build complete."
             }
         }
@@ -32,7 +36,11 @@ pipeline {
         stage('3. Docker Compose Up') {
             steps {
                 echo "Creating and Running the docker container in detach mode"
-                sh 'docker-compose -f docker.compose.yaml up -d'
+                if (isUnix()) {
+                    sh 'docker-compose -f docker.compose.yaml up -d'
+                } else {
+                    bat 'docker-compose -f docker.compose.yaml up -d'
+                }
             }
         }
 
@@ -41,7 +49,11 @@ pipeline {
             steps {
                 echo 'Logging into Docker Hub...'
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh "docker login -u '${DOCKER_USER}' -p '${DOCKER_PASS}'"
+                    if (isUnix()) {
+                        sh "docker login -u '${DOCKER_USER}' -p '${DOCKER_PASS}'"
+                    } else {
+                        bat "docker login -u '${DOCKER_USER}' -p '${DOCKER_PASS}'"
+                    }
                 }
                 echo 'Login successful.'
             }
@@ -51,14 +63,25 @@ pipeline {
         stage('5. Push Docker Image') {
             steps {
                 echo "Pushing image ${IMAGE_NAME}:${IMAGE_TAG} to Docker Hub..."
-                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                if (isUnix()) {
+                    sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                } else {                    
+                    bat "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
                 
                 echo "Tagging image as 'latest'..."
-                sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                if (isUnix()) {
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                } else {                    
+                    bat "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                }
                 
                 echo "Pushing 'latest' tag to Docker Hub..."
-                sh "docker push ${IMAGE_NAME}:latest"
-                
+                if (isUnix()) {
+                    sh "docker push ${IMAGE_NAME}:latest"
+                } else {                    
+                    bat "docker push ${IMAGE_NAME}:latest"
+                }
                 echo "Push complete."
             }
         }
@@ -68,7 +91,11 @@ pipeline {
     post {
         always {
             echo 'Pipeline finished. Logging out from Docker Hub for security.'
-            sh 'docker logout'
+            if (isUnix()) {
+                sh 'docker logout'
+            } else {                    
+                bat 'docker logout'
+            }
         }
         failure {
             echo 'Pipeline failed due to some reason. Check logs.'
