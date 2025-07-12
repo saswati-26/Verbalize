@@ -3,6 +3,7 @@ version: "3.8"
 services:
   app:
     build: .
+    image: ${IMAGE_NAME:-saswati26/verbalize}:${IMAGE_TAG:-latest}
     container_name: verbalize-app
     ports:
       - "5000:5000"
