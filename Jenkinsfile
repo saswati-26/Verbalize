@@ -69,19 +69,25 @@ pipeline {
         stage('5. Push Docker Image') {
             steps {
                 script {
-                    echo "Tagging image ${IMAGE_NAME}:${IMAGE_TAG} as 'latest'..."
+                    echo "Pushing image ${IMAGE_NAME}:${IMAGE_TAG} to Docker Hub..."
                     if (isUnix()) {
-                        sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                     } else {                    
-                        bat "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                        bat "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                     }
+                    // echo "Tagging image ${IMAGE_NAME}:${IMAGE_TAG} as 'latest'..."
+                    // if (isUnix()) {
+                    //     sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                    // } else {                    
+                    //     bat "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+                    // }
                     
-                    echo "Pushing 'latest' tag to Docker Hub..."
-                    if (isUnix()) {
-                        sh "docker push --all-tags ${IMAGE_NAME}"
-                    } else {                    
-                        bat "docker push --all-tags ${IMAGE_NAME}"
-                    }
+                    // echo "Pushing 'latest' tag to Docker Hub..."
+                    // if (isUnix()) {
+                    //     sh "docker push --all-tags ${IMAGE_NAME}"
+                    // } else {                    
+                    //     bat "docker push --all-tags ${IMAGE_NAME}"
+                    // }
                 }
                 echo "Push complete."
             }
