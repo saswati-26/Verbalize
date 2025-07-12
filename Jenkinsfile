@@ -55,9 +55,9 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         if (isUnix()) {
-                            sh "docker login -u '${DOCKER_USER}' --password-stdin '${DOCKER_PASS}'"
+                            sh "echo \"${DOCKER_PASS}\" | docker login -u \"${DOCKER_USER}\" --password-stdin"
                         } else {
-                            bat "docker login -u '${DOCKER_USER}' --password-stdin '${DOCKER_PASS}'"
+                            bat "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                         }
                     }
                 }
