@@ -55,9 +55,9 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         if (isUnix()) {
-                            sh "docker login -u '${DOCKER_USER}' -p '${DOCKER_PASS}'"
+                            sh "docker login -u '${DOCKER_USER}' --password-stdin '${DOCKER_PASS}'"
                         } else {
-                            bat "docker login -u '${DOCKER_USER}' -p '${DOCKER_PASS}'"
+                            bat "docker login -u '${DOCKER_USER}' --password-stdin '${DOCKER_PASS}'"
                         }
                     }
                 }
@@ -104,16 +104,30 @@ pipeline {
                         string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET_KEY')
                     ]) {
 
-                        bat "docker stop verbalize-app || true"
-                        bat "docker rm verbalize-app || true"
+                        if (isUnix()) {
 
-                        bat """
-                            docker run -d --name verbalize-app -p 5000:5000 ^
-                            -e MONGODB_URI="${MONGODB_CONNECTION_STRING}" ^
-                            -e JWT_SECRET="${JWT_SECRET_KEY}" ^
-                            -e PORT=5000 ^
-                            ${IMAGE_NAME}:${IMAGE_TAG}
-                        """
+                            sh "docker stop verbalize-app || true"
+                            sh "docker rm verbalize-app || true"
+
+                            sh """
+                                docker run -d --name verbalize-app -p 5000:5000 ^
+                                -e MONGODB_URI="${MONGODB_CONNECTION_STRING}" ^
+                                -e JWT_SECRET="${JWT_SECRET_KEY}" ^
+                                -e PORT=5000 ^
+                                ${IMAGE_NAME}:${IMAGE_TAG}
+                            """
+                        } else {
+                            bat "docker stop verbalize-app || true"
+                            bat "docker rm verbalize-app || true"
+
+                            bat """
+                                docker run -d --name verbalize-app -p 5000:5000 ^
+                                -e MONGODB_URI="${MONGODB_CONNECTION_STRING}" ^
+                                -e JWT_SECRET="${JWT_SECRET_KEY}" ^
+                                -e PORT=5000 ^
+                                ${IMAGE_NAME}:${IMAGE_TAG}
+                            """
+                        } 
                     }
                 }
             }
