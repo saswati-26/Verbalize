@@ -93,6 +93,31 @@ pipeline {
                 echo "Push complete."
             }
         }
+
+        stage('6. Deploy Application') {
+            steps {
+                script {
+                    echo "Deploying image ${IMAGE_NAME}:${IMAGE_TAG}..."
+
+                    withCredentials([
+                        string(credentialsId: 'mongodb-uri', variable: 'MONGODB_CONNECTION_STRING'),
+                        string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET_KEY')
+                    ]) {
+
+                        bat "docker stop verbalize-app || true"
+                        bat "docker rm verbalize-app || true"
+
+                        bat """
+                            docker run -d --name verbalize-app -p 5000:5000 ^
+                            -e MONGODB_URI="${MONGODB_CONNECTION_STRING}" ^
+                            -e JWT_SECRET="${JWT_SECRET_KEY}" ^
+                            -e PORT=5000 ^
+                            ${IMAGE_NAME}:${IMAGE_TAG}
+                        """
+                    }
+                }
+            }
+        }    
     }
 
     // post-build actions
